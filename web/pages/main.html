@@ -1,0 +1,15 @@
+
+<h2>
+    Some usefull linux stuff
+</h2>
+<h3>Symlinks</h3>
+Working on files using a symbolic link:</br>
+run the following in your terminal of choice:</br>
+<pre><code>ln -s $(pwd)/{dir to link} /{where to link it}</code></pre>
+</br>
+If you are met with a 403 error page. run the following:</br>
+<pre><code>chmod o+x /home/username</code></pre>
+<h3>Samba</h3>
+Run the following to mount a samba share while you're on the correct
+network.</br>
+<pre><code>sudo mount -t cifs //student.cs.hioa.no/{username} /mnt/student.cs.hioa/ --verbose -o username={username},workgroup=ada</code></pre>

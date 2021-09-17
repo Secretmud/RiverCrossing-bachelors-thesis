@@ -1,0 +1,54 @@
+html {
+    margin: 0;
+    padding: 0;
+}
+body {
+    background: rgb(213, 209, 223);
+    display: grid;
+    grid-template-rows: 5vh 30vh 50vh 15vh;
+    grid-template-columns: 20vw auto;
+    grid-template-areas: "head head"
+                       "nav  main"
+                       "nav  main"
+                       "fot fot";
+}
+h1, h2, h3 {
+    color: black;
+    font-family: Times;
+    font-weight: lighter;
+}
+.head {
+    grid-area: head;
+}
+.anchor {
+    grid-area: nav; 
+}
+
+.wrap {
+    grid-area: main;
+    background: orange;
+    padding: 10px;
+}
+
+.dynamic {
+    height: 100%;
+}
+
+.footer {
+    grid-area: footer;
+}
+
+
+.link {
+    margin: 2px;
+    color: black;
+    font-size: 18px;
+}
+.link > * {
+    color: blue;
+    text-decoration: none;
+}
+
+.link > a:hover {
+    text-decoration: underline;
+}
