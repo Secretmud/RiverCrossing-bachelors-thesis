@@ -4,7 +4,7 @@
 
 class Particle {
     public:
-        Particle(int faction, int width, int height, int health, int strength);
+        Particle(int faction, int width, int height, int health, int strength, int index);
         std::vector<int> getColor();
         // Getters
         int getHeight();
@@ -17,6 +17,7 @@ class Particle {
         void setWidth(int width);
         void setHealth(int attack);
         void setStrength(int strength);
+        int index;
     private:
         int height;
         int width;

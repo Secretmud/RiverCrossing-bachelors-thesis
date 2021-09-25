@@ -3,8 +3,14 @@
 
 
 
-Particle::Particle(int faction, int width, int height, int health, int strength)
-    : faction(faction), width(width), height(height), health(health), strength(strength) {}
+Particle::Particle(int faction, int width, int height, int health, int strength, int index){
+    this->faction = faction;
+    this->width = width;
+    this->height = height; 
+    this->health = health;
+    this->strength = strength; 
+    this->index = index;
+}
 
 void Particle::setWidth(int width) {
     this->width = width;
@@ -27,15 +33,15 @@ int Particle::getFaction() {
 }
 
 void Particle::setHealth(int attack) {
-    this->health = this->health - attack;
+    this->health = std::move(attack);
 }
 
 int Particle::getHealth() {
-    return this->health;
+    return health;
 }
 
 void Particle::setStrength(int strength) {
-    this->strength = strength;
+    this->strength = std::move(strength);
 }
 
 int Particle::getStrength() {
