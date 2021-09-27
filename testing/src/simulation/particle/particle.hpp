@@ -17,6 +17,7 @@ class Particle {
         void setWidth(int width);
         void setHealth(int attack);
         void setStrength(int strength);
+        void setFaction(int faction);
         int index;
     private:
         int height;

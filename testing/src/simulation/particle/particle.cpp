@@ -32,6 +32,10 @@ int Particle::getFaction() {
     return this->faction;
 }
 
+void Particle::setFaction(int faction) {
+    this->faction = std::move(faction);
+}
+
 void Particle::setHealth(int attack) {
     this->health = std::move(attack);
 }
