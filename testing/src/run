@@ -1,2 +1,2 @@
 g++ -Wall -c main.cpp simulation/particle/*.hpp simulation/particle/*.cpp -Wbool-compare -Wparentheses
-g++ *.o -o sfml-app -lsfml-graphics -lsfml-window -lsfml-system
+g++ *.o -o sfml-app -lsfml-graphics -lsfml-window -lsfml-system -fopenmp

@@ -8,9 +8,10 @@
 #include <chrono>         // std::chrono::seconds
 #include <utility>
 #include <algorithm>
+#include <omp.h>
 
 void generateImage(int height, int width, std::vector<std::pair<Particle, sf::RectangleShape>> &pixels);
-void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities);
+void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, int &c);
 void newParticle(Particle &p, int faction, sf::RectangleShape &rec);
 bool placement(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, float pos[2]);
 void find(Particle &p, sf::RectangleShape &rec);
@@ -25,8 +26,9 @@ int main() {
     generateImage(height, width, pixels);
     std::cout << "Creating animation" << std::endl;
     bool paused = true;
+    int c = 0;
     while (window.isOpen()) {
-        window.setFramerateLimit(12);
+        window.setFramerateLimit(60);
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
@@ -36,14 +38,18 @@ int main() {
             paused = (paused) ? false : true;
             std::cout << paused << std::endl;
         }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
+            generateImage(height, width, pixels);
+        }
         if (!paused) {
             window.clear();
-            move(pixels);
-            for (auto &obj : pixels) {
+            move(pixels, c);
+            #pragma omp parallel for
+            for (auto obj : pixels) {
                 window.draw(obj.second);
             }
         }
-
+        c++;
         window.display();
     }
 
@@ -51,7 +57,8 @@ int main() {
 }
 
 void generateImage(int height, int width, std::vector<std::pair<Particle, sf::RectangleShape>> &pixels) {
-    int amount = 100;
+    pixels.clear();
+    int amount = 50;
     int entity_size = 10;
     float posx = 0.f;
     float posy;
@@ -61,7 +68,7 @@ void generateImage(int height, int width, std::vector<std::pair<Particle, sf::Re
         float hpos[2] = {rand() % height,rand() % width};
         if (placement(pixels, apos) && placement(pixels, hpos)) {
             Particle alliance(0, apos[0], apos[1], 5, 1, i);
-            Particle horde(1, hpos[0], hpos[1], 5, 1, i+amount);
+            Particle horde(1, hpos[0], hpos[1], 10, 1, i+amount);
             sf::RectangleShape tmp1(sf::Vector2f(entity_size, entity_size));
             sf::RectangleShape tmp2(sf::Vector2f(entity_size, entity_size));
             newParticle(alliance, 0, tmp1);
@@ -73,7 +80,7 @@ void generateImage(int height, int width, std::vector<std::pair<Particle, sf::Re
     }
 }
 
-void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities) {
+void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, int &c) {
     std::vector<std::pair<Particle, sf::RectangleShape>> refresh;
     for (auto entity : entities) {
         bool dead = false;
@@ -105,12 +112,10 @@ void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities) {
                         enemy_pos.y < curpos.y + 10 &&
                         enemy_pos.y + 10 > curpos.y) {
                         enemies.first.setHealth(enemies.first.getHealth() + entity.first.getStrength());
-                        entity.first.setHealth(0);
-                        if (entity.first.getHealth() <= 0) {
-                            entity.first.setFaction(1);
-                            std::vector<int> x = entity.first.getColor();
-                            entity.second.setFillColor(sf::Color(x[0], x[1], x[2], x[3]));
-                        }
+                        entity.first.setHealth(5);
+                        entity.first.setFaction(1);
+                        std::vector<int> x = entity.first.getColor();
+                        entity.second.setFillColor(sf::Color(x[0], x[1], x[2], x[3]));
                     }
                 }
             }
@@ -122,17 +127,18 @@ void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities) {
                 newParticle(p, 0, rec);
                 refresh.emplace_back(p, rec);
                 entity.first.setHealth(5);
-                dead = true;
+                int die = rand() % 100;
+                if (die >= 85) dead = true;
             } else {
                 entity.first.setHealth(entity.first.getHealth() + 1);
             }
         } 
         
         if (entity.first.getFaction() == 1) {
-            if (entity.first.getHealth() >= 20)
+            if (entity.first.getHealth() <= 0)
                 dead = true;
             else
-                entity.first.setHealth(entity.first.getHealth() + 1);
+                entity.first.setHealth(entity.first.getHealth() - ((c % 5 == 0) ? 1 : 0));
 
         }
 
