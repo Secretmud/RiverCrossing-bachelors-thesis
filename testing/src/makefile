@@ -1,26 +1,19 @@
-LIBS=-lsfml-graphics -lsfml-window -lsfml-system
+LIBS=-lsfml-graphics -lsfml-window -lsfml-system -fopenmp
 CXX := g++
 
 all: animation
 
 %.o: %.cpp
-        $(CXX) -c $< -o $@
+	$(CXX) -c $< -o $@
 
 %.o: %.hpp
-        $(CXX) -c $< -o $@
+	$(CXX) -c $< -o $@
 
-animation: Game.o State.o PlayState.o Object.o Player.o
-        @echo "** Building the game"
-        $(CXX) -o animation Game.o State.o PlayState.o Object.o Player.o $(LIBS)
+animation: 
+	@echo "** Building the game"
+	$(CXX) -c main.cpp simulation/particle/*.hpp simulation/particle/*.cpp
+	$(CXX) -o animation *.o $(LIBS)
 
-clean:
-        @echo "** Removing object files and executable..."
-        rm -f animation *.o
-
-install:
-        @echo '** Installing...'
-        cp animation /usr/bin/
-
-uninstall:
-        @echo '** Uninstalling...'
-        $(RM) /usr/bin/animation
+clean: animation
+	@echo "** Removing object files and executable..."
+	rm -f animation *.o
