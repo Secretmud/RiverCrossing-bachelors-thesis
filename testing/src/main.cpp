@@ -13,7 +13,7 @@
 void generateImage(int height, int width, std::vector<std::pair<Particle, sf::RectangleShape>> &pixels);
 void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, int &c);
 void newParticle(Particle &p, int faction, sf::RectangleShape &rec);
-bool placement(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, float pos[2]);
+bool placement(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, sf::Vector2f pos);
 void find(Particle &p, sf::RectangleShape &rec);
 
 int main() {
@@ -33,18 +33,19 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-            paused = (paused) ? false : true;
-            std::cout << paused << std::endl;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
-            generateImage(height, width, pixels);
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Space) {
+                    paused = (paused) ? false : true;
+                    std::cout << paused << std::endl;
+                }
+                if (event.key.code == sf::Keyboard::R) {
+                    generateImage(height, width, pixels);
+                }
+            }
         }
         if (!paused) {
             window.clear();
             move(pixels, c);
-            #pragma omp parallel for
             for (auto obj : pixels) {
                 window.draw(obj.second);
             }
@@ -58,23 +59,23 @@ int main() {
 
 void generateImage(int height, int width, std::vector<std::pair<Particle, sf::RectangleShape>> &pixels) {
     pixels.clear();
-    int amount = 50;
+    int amount = 30;
     int entity_size = 10;
-    float posx = 0.f;
-    float posy;
     int i = 0;
     while (i < amount){
-        float apos[2] = {rand() % height,rand() % width};
-        float hpos[2] = {rand() % height,rand() % width};
+        sf::Vector2f apos = {(float)(rand() % height),(float)(rand() % width)};
+        sf::Vector2f hpos = {(float)(rand() % height),(float)(rand() % width)};
         if (placement(pixels, apos) && placement(pixels, hpos)) {
-            Particle alliance(0, apos[0], apos[1], 5, 1, i);
-            Particle horde(1, hpos[0], hpos[1], 10, 1, i+amount);
+            Particle alliance(0, apos.x, apos.y, 5, 1, i);
             sf::RectangleShape tmp1(sf::Vector2f(entity_size, entity_size));
-            sf::RectangleShape tmp2(sf::Vector2f(entity_size, entity_size));
             newParticle(alliance, 0, tmp1);
-            newParticle(horde, 0, tmp2);
             pixels.emplace_back(alliance, tmp1);
-            pixels.emplace_back(horde, tmp2);
+            if (i < 5) {
+                Particle horde(1, hpos.x, hpos.y, 10, 1, i+amount);
+                sf::RectangleShape tmp2(sf::Vector2f(entity_size, entity_size));
+                pixels.emplace_back(horde, tmp2);
+                newParticle(horde, 0, tmp2);
+            }
             i++;
         }
     }
@@ -122,13 +123,25 @@ void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, int &c
         }
         if (entity.first.getFaction() == 0) {
             if (entity.first.getHealth() >= 20) {
-                sf::RectangleShape rec(sf::Vector2f(10, 10));
-                Particle p(0, entity.first.getWidth(), entity.first.getHeight(), 5, 1, 1);
-                newParticle(p, 0, rec);
-                refresh.emplace_back(p, rec);
                 entity.first.setHealth(5);
                 int die = rand() % 100;
+                int mutate = rand() % 100;
                 if (die >= 85) dead = true;
+                if (mutate >= 98) {
+                    Particle p(1, curpos.x, curpos.y, 5, 1, 1);
+                    sf::RectangleShape rec(sf::Vector2f(10, 10));
+                    std::vector<int> x = p.getColor();
+                    entity.second.setFillColor(sf::Color(x[0], x[1], x[2], x[3]));
+                    newParticle(p, 0, rec);
+                    refresh.emplace_back(p, rec);
+                } else {
+                    Particle p(0, curpos.x, curpos.y, 10, 1, 1);
+                    sf::RectangleShape rec(sf::Vector2f(10, 10));
+                    std::vector<int> x = p.getColor();
+                    entity.second.setFillColor(sf::Color(x[0], x[1], x[2], x[3]));
+                    newParticle(p, 1, rec);
+                    refresh.emplace_back(p, rec);
+                }
             } else {
                 entity.first.setHealth(entity.first.getHealth() + 1);
             }
@@ -138,13 +151,13 @@ void move(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, int &c
             if (entity.first.getHealth() <= 0)
                 dead = true;
             else
-                entity.first.setHealth(entity.first.getHealth() - ((c % 5 == 0) ? 1 : 0));
+                entity.first.setHealth(entity.first.getHealth() - ((c % 15 == 0) ? 1 : 0));
 
         }
 
-        if (!dead) 
-            refresh.emplace_back(entity.first, entity.second);
+        if (!dead) refresh.emplace_back(entity.first, entity.second);
     }
+    entities.clear();
     entities = refresh;
     refresh.clear();
 }
@@ -155,9 +168,9 @@ void newParticle(Particle &p, int faction, sf::RectangleShape &rec) {
     rec.setPosition(p.getWidth(), p.getHeight());
 }
 
-bool placement(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, float pos[2]) {
+bool placement(std::vector<std::pair<Particle, sf::RectangleShape>> &entities, sf::Vector2f pos) {
     for (auto entity : entities) {
-        if (entity.second.getPosition() == sf::Vector2f(pos[0], pos[1])) return false;
+        if (entity.second.getPosition() == pos) return false;
     }
     return true;
 }

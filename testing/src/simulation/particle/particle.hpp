@@ -5,6 +5,7 @@
 class Particle {
     public:
         Particle(int faction, int width, int height, int health, int strength, int index);
+        ~Particle();
         std::vector<int> getColor();
         // Getters
         int getHeight();
