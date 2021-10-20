@@ -12,7 +12,6 @@ function render() {
         <button id="${dataContent[0]}" name="${dataContent[1]}">${dataContent[2]}</button>
         `;
         div.addEventListener('click', () => {
-            console.log(`HEI! ${dataContent[1]}`)
             content.src = dataContent[1];
 
         });

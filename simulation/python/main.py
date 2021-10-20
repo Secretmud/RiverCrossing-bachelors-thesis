@@ -1,16 +1,18 @@
 import random
 class Ant:
 
-    def __init__(self, x, y, start_x, start_y):
-        u = Utility()
-        self.path = u.zeroes(x, y)
+    def __init__(self, start_x, start_y):
+        self.path = []
         self.add_path(start_x, start_y)
 
     def add_path(self, x, y):
-        self.path[x][y] = Point(x, y)
+        self.path.append(Point(x, y))
 
     def get(self, x, y):
-        return self.path[x][y]
+        for i in self.path:
+            if i.x == x and i.y == y:
+                return i
+        return 0
 
 
 class Point:
@@ -51,15 +53,21 @@ class Simulation:
         self.ant_amt = ant_amt
 
     def generate_solution(self, arr, ants):
-        for ant in ants:
+        current: int = 0
+        while current != self.ant_amt:
             for i in arr:
                 for j in i:
-                    ant.add_path(1, j.y)
-                    print(ant.path[j.x][j.y], end=" ")
+                    ants[current].add_path(1, j.y)
 
-                print()
+            current += 1
 
         return ants
+
+    def neighbor(self, arr, x, y):
+
+        if x == 0:
+            pass
+
 
 
 class Calculation:
@@ -82,11 +90,12 @@ class Calculation:
 
 
 def main():
-    c = Calculation(0.5, 1)
+    ant_amt = 100
     u = Utility()
-    s = Simulation(100)
+    s = Simulation(ant_amt)
+    c = Calculation(0.5, 1)
     x = u.fill_cost(5, 5)
-    ants = [Ant(5,5, 0, 1) for i in range(1)] 
+    ants = [Ant(1, 0) for i in range(ant_amt)] 
     ants = s.generate_solution(x, ants)
     c.pheremone_update(x, ants)
 

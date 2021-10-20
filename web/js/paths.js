@@ -7,7 +7,7 @@ export default
     },
     {
         "id": 2,
-        "location": "pages/langauges.html",
+        "location": "pages/languages.html",
         "name": "Languages"
     },
     {
@@ -19,5 +19,10 @@ export default
         "id": 4,
         "location": "pages/about.html",
         "name": "About"
+    },
+    {
+        "id": 5,
+        "location": "pages/group.html",
+        "name": "Group"
     }
 ]

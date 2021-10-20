@@ -45,6 +45,9 @@ h1, h2, h3 {
     font-size: 18px;
 }
 .link > * {
+    width: 100%;
+    display: flex;
+    font-size: 16px;
     color: blue;
     text-decoration: none;
 }
