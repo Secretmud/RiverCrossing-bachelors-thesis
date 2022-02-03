@@ -25,6 +25,6 @@ class Utility:
                 if x < len(tmp[y])/2:
                     tmp[y][x] = Point(y, x, c, 1)
                     tmp[y][len(tmp[y])-x-1] = Point(y, len(tmp[y])-x-1, c, 1)
-                c = random.uniform(c, c+random.uniform(0, 2))
+                c = random.uniform(c, c+random.uniform(0, 0.1))
 
         return tmp

@@ -8,11 +8,11 @@ def main():
     ant_amt = 1
     u = Utility()
     s = Simulation(ant_amt)
-    c = Calculation(0.5, 1)
-    x = u.fill_cost(3, 3)
+    c = Calculation(0.2, 0)
+    x = u.fill_cost(5, 5)
     ants = [Ant(Point(0, 1)) for i in range(ant_amt)] 
     i = 0
-    while i < 10:
+    while i < 1:
         ants = s.generate_solution(x, ants)
         c.pheremone_update(x, ants)
         i += 1

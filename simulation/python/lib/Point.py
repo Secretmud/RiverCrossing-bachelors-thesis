@@ -1,7 +1,7 @@
 
 class Point:
 
-    def __init__(self, x, y, v=0, pheremone=0):
+    def __init__(self, x, y, v=0, pheremone=1):
         self.x = x
         self.y = y
         self.v = v
