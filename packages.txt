@@ -1,0 +1,4 @@
+matplotlib
+jax
+jaxlib
+numba
