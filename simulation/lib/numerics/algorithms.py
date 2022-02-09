@@ -1,10 +1,13 @@
 import numpy as np
 
 
-def vec_midpoint(f, a, b, n, g=0, theta=0):
+def vec_midpoint(f, a, b, n, g=None, theta=None):
     h = (b - a)/n
     x = np.linspace(a+h/2, b-h/2, n)
-    return np.sum(f(x, g(x, theta)))*h
+    if (g != None):
+        if (isinstance(theta, (np.ndarray, np.generic) ) and theta.all() != None or theta == type(int) and theta != None):
+            return np.sum(f(x, g(x, theta)))*h
+    return np.sum(f(x))*h
 
 
 def trapezoidal(f, start, end, n, g, theta):
