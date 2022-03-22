@@ -17,11 +17,15 @@ smax = 0.9
 functions = [
     lambda x, theta: np.tan(theta) - S(x)/(v*np.cos(theta))
 ]
-S = lambda x, g=0: smax*np.exp(-(np.power(x-D/2, 4)/5000))
+
+S = lambda x, g=0: smax*np.exp(-(np.power(x-D/3, 4)/5000))
+#S = lambda x: smax*np.power(x, 0)
 T1 = lambda x, g: (1+np.power(g, 2))/(np.sqrt((1+np.power(g, 2))*np.power(v, 2) - np.power(S(x), 2))-g*S(x))
 
 x = np.linspace(0, D, N)
-
+sd = SteepestDescent(x, D, S, T1, [0])
+print(trapezoidal(T1, 0, D, N, sd.cosine_expansion([-0.6925192930776441, 0.46039340890690966])))
+"""
 y_vec = [0]*N
 time = 0
 i = 0
@@ -43,3 +47,5 @@ for gs in functions:
     i += 1
 plt.plot([0, D], [0, 0])
 plt.show()
+
+"""

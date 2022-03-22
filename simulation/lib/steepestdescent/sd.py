@@ -22,17 +22,17 @@ class SteepestDescent():
         if x is not None:
             if D is not None:
                 for c in points:
-                    tot += c*np.sin((n*np.pi/D)*x)
+                    tot += c*np.cos((n*np.pi/D)*x)
                     n += 1
                 return tot
             
             for c in points:
-                tot += c*np.sin((n*np.pi/x[-1])*x)
+                tot += c*np.cos((n*np.pi/x[-1])*x)
                 n += 1
             return tot
             
         for c in points:
-            tot += c*np.sin((n*np.pi/self.d)*self.x)
+            tot += c*np.cos((n*np.pi/self.d)*self.x)
             n += 1
         return tot
 
@@ -40,24 +40,34 @@ class SteepestDescent():
         #return trapezoidal(T1, 0, x[-1], len(x), cosine_expansion(x, x[-1], c))
         return trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c))
 
-    def steepest_descent(self, c, learning_rate = 0.5, stopping_threshold = 1e-6):
+    def steepest_descent(self, c, plot=False, learning_rate = 1, stopping_threshold = 1e-5):
         nc = len(c)
-        h = 0.1
+        h = 0.05
         iterations = 0
         fd = 1
         cold = np.copy(c)
+        if plot:
+            self.scatter = np.copy(c)
+            self.scatter = np.append(self.scatter, trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c)))
+            p.plot_scatter(self.scatter)
         #while np.absolute(np.sum(cold) - np.sum(c))>= stopping_threshold:
         while fd >= stopping_threshold:
             cold = np.copy(c)
-            iterations += 1
-            if iterations % 1 == 0:
-                self.scatter = np.copy(c)
-                self.scatter = np.append(self.scatter, trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c)))
-                p.plot_scatter(self.scatter)
-                p.plot_pause(0.1)
+            iterations += nc
+            if plot:
+                if iterations % 1 == 0:
+                    self.scatter = np.copy(c)
+                    self.scatter = np.append(self.scatter, trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c)))
+                    p.plot_scatter(self.scatter)
+                    p.plot_pause(0.1)
             for i in range(nc):
-                fd = (self.time([c[i]+h]) - self.time([c[i]-h]))/2*h
+                minc = np.copy(c)
+                posc = np.copy(c)
+                minc[i] = minc[i] - h
+                posc[i] = posc[i] + h
+                fd = (self.time(posc) - self.time(minc))/2*h
                 c[i] = c[i] - learning_rate*fd
+            print(f"{iterations=}", end="\r")
         print(f"\nDone with {iterations=}")
         return c
 

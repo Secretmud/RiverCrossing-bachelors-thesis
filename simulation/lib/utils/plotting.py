@@ -33,6 +33,7 @@ class Plotter(metaclass=Singleton):
         self.pathz = [0]*self.N
         self.i = 0
         self.scatter = 0
+        self.line = 0
 
     def get_projection(self):
         if self.projection == None:
@@ -44,7 +45,7 @@ class Plotter(metaclass=Singleton):
         if projection == "3d":
             #self.ax = Axes3D(fig)
             self.ax = self.fig.add_subplot(111, projection=projection)
-            self.ax.view_init(elev=20, azim=150)
+            self.ax.view_init(elev=55, azim=-135)
         else:
             self.ax = self.fig.add_subplot(111)
 
@@ -53,8 +54,8 @@ class Plotter(metaclass=Singleton):
         self.ax.plot(x, y)
         if (x1 != None or y1 != None):
             self.ax.plot(x1, y1, "r+")
-        self.ax.set_xlabel("C_n")
-        self.ax.set_ylabel("T[C_n]")
+        self.ax.set_xlabel("D")
+        self.ax.set_ylabel("W")
         if (legend != None):
             posx = min(x) + 2
             posy = max(y) - 5
@@ -81,38 +82,40 @@ class Plotter(metaclass=Singleton):
         norm = plt.Normalize(Z.min(), Z.max())
         colors = cm.viridis(norm(Z))
         rcount, ccount, _ = colors.shape
-        self.ax.plot_surface(X, Y, Z, cmap='viridis', rcount=rcount, ccount=ccount, facecolors=colors, shade=False, alpha=0.3)
-        self.ax.set_xlabel("C_1", fontsize=12)
-        self.ax.set_ylabel("C_2", fontsize=12)
-        self.ax.set_zlabel("T[C_n]", fontsize=12)
+        self.ax.plot_surface(X, Y, Z, cmap='viridis', rcount=rcount, ccount=ccount, facecolors=colors, shade=False, alpha=0.5)
+        self.ax.set_xlabel(r"$C_1$", fontsize=12)
+        self.ax.set_ylabel(r"$C_2$", fontsize=12)
+        self.ax.set_zlabel(r"$T[C_n]$", fontsize=12)
 
     def plot_contour(self, X, Y, z):
         Z = np.array(z)
         norm = plt.Normalize(Z.min(), Z.max())
         CS = self.ax.contour(X, Y, Z, levels=35)
-        self.ax.set_xlabel("C_1", fontsize=12)
-        self.ax.set_ylabel("C_2", fontsize=12)
+        self.ax.set_xlabel(r"$C_1$", fontsize=12)
+        self.ax.set_ylabel(r"$C_2$", fontsize=12)
         self.ax.clabel(CS, inline=True, fmt='%1.1f s', fontsize=10)
 
     def plot_scatter(self, points, last=None):
-        if self.i + 1 == 10:
-            self.pathx[1] = self.pathx[-1]
-            self.pathy[1] = self.pathy[-1]
-            self.pathz[1] = self.pathz[-1]
+        if self.i + 1 == self.N:
+            self.pathx[0] = self.pathx[-1]
+            self.pathy[0] = self.pathy[-1]
+            self.pathz[0] = self.pathz[-1]
             self.i = 1
         if self.i == 0:
             for i in range(len(self.pathx)):
                 self.pathx[i] = points[0]
                 self.pathy[i] = points[1]
                 self.pathz[i] = points[2]
-            self.scatter = self.ax.scatter(self.pathx, self.pathy, self.pathz, alpha=1, color="red")
+            self.scatter = self.ax.scatter(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i], alpha=1, color="red")
+            self.line = self.ax.plot(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i])
         else:
             self.pathx[self.i] = points[0]
             self.pathy[self.i] = points[1]
             self.pathz[self.i] = points[2]
-        if self.i % 3 == 0:
+        if self.i % 1 == 0:
             self.scatter.remove()
-            self.scatter = self.ax.scatter(self.pathx, self.pathy, self.pathz, alpha=1, color="black")
+            self.line = self.ax.plot(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i])
+            self.scatter = self.ax.scatter(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i], alpha=1, color="red")
         self.i += 1
 
     def plot_show(self):
@@ -120,3 +123,9 @@ class Plotter(metaclass=Singleton):
 
     def plot_pause(self, time):
         plt.pause(time)
+
+    def plot_ant(self, X, Y):
+        self.ax.plot(X, Y)
+
+    def plot_ant_surface(self, X, Y):
+        self.ax.plot(X, Y)
