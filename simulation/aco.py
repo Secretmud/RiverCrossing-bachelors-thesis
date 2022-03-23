@@ -7,8 +7,8 @@ import threading
 
 g = lambda x, theta: np.tan(theta) - S(x)/(v*np.cos(theta))
 
-n = 50
-m = 50
+n = 100
+m = 100
 D = 20
 S = lambda x: 0.9*np.exp(-np.power(x-D/2, 4)/5000)
 v = 1
@@ -33,7 +33,7 @@ for y in range(m):
 def neighbor(surface, x, y):
     neigh = {#0: surface[y-1][x] if y-1 >= 0 else None,
              1: surface[y-1][x+1] if y+1 < m and x+1 < n else None,
-             #2: surface[y][x+1] if x+1 < n else None,
+             2: surface[y][x+1] if x+1 < n else None,
              3: surface[y+1][x+1] if y+1 < m and x+1 < n else None,
              #4: surface[y+1][x] if y+1 < m else None
             }
@@ -55,36 +55,32 @@ def generate_solution(ant):
     curr = ant.get_current()
     while curr.x + 1 != n:
         neigh = neighbor(surface, curr.x, curr.y)
-        next_step = []
-        for key, val in neigh.items():
-            if val is not None:
-                if v > val.v:
-                    next_step.append(val)
         pheremone = 0
-        if (len(next_step) > 0):
-            for ph in next_step:
-                pheremone += ph.p
+        if (len(neigh) > 0):
+            for k, val in neigh.items():
+                if val is not None:
+                    pheremone += val.p
             nxt = random.random()
             potential_nodes = {}
-            for k, v in x.items():
-            if v is not None:
-                potential_nodes[k] = v/pheremone
+            for k, val in neigh.items():
+                if val is not None:
+                    potential_nodes[k] = val.p/pheremone
 
-            potential_nodes = {k: v for k, v in sorted(potential_nodes.items(), key=lambda item: item[1])}
+            potential_nodes = {k: val for k, val in sorted(potential_nodes.items(), key=lambda item: item[1])}
 
             prev_v = 0
             next_node = 0
             last_key = list(potential_nodes.keys())[-1]
-            for k, v in potential_nodes.items():
-                if prev_v <= nxt < v:
+            for k, val in potential_nodes.items():
+                if prev_v <= nxt < val:
                     next_node = k
                     break
                 if k == last_key:
                     next_node = k
 
-                prev_v = v
+                prev_v = val
 
-            ant.add_path(next_step[next_node])
+            ant.add_path(neigh[next_node])
         else:
             break
         curr = ant.get_current()
@@ -94,12 +90,9 @@ def generate_solution(ant):
         else:
             ant.add_path(surface[curr.y-1][curr.x])
         curr = ant.get_current()
-        
-        import random
 
 
-
-rho = 0.9
+rho = 0.5
 
 def update_pheremones():
         for y in range(m):
@@ -113,7 +106,7 @@ def update_pheremones():
                           
                 surface[y][x].p = (1-rho)*surface[y][x].p + tot_p
 
-while f < 1:
+while f < 10:
     threads = [threading.Thread(target=generate_solution, args=(ant,)) for ant in ants]
     for t in threads:
         t.start()
