@@ -64,8 +64,27 @@ def generate_solution(ant):
         if (len(next_step) > 0):
             for ph in next_step:
                 pheremone += ph.p
-            nxt = random.randint(0, len(next_step)-1)
-            ant.add_path(next_step[nxt])
+            nxt = random.random()
+            potential_nodes = {}
+            for k, v in x.items():
+            if v is not None:
+                potential_nodes[k] = v/pheremone
+
+            potential_nodes = {k: v for k, v in sorted(potential_nodes.items(), key=lambda item: item[1])}
+
+            prev_v = 0
+            next_node = 0
+            last_key = list(potential_nodes.keys())[-1]
+            for k, v in potential_nodes.items():
+                if prev_v <= nxt < v:
+                    next_node = k
+                    break
+                if k == last_key:
+                    next_node = k
+
+                prev_v = v
+
+            ant.add_path(next_step[next_node])
         else:
             break
         curr = ant.get_current()
@@ -75,6 +94,10 @@ def generate_solution(ant):
         else:
             ant.add_path(surface[curr.y-1][curr.x])
         curr = ant.get_current()
+        
+        import random
+
+
 
 rho = 0.9
 
