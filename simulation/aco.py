@@ -31,11 +31,11 @@ for y in range(m):
 
 
 def neighbor(surface, x, y):
-    neigh = {#0: surface[y-1][x] if y-1 >= 0 else None,
-             1: surface[y-1][x+1] if y+1 < m and x+1 < n else None,
-             2: surface[y][x+1] if x+1 < n else None,
-             3: surface[y+1][x+1] if y+1 < m and x+1 < n else None,
-             #4: surface[y+1][x] if y+1 < m else None
+    neigh = {0: surface[y + 1][x] if y + 1 < m else None,
+             1: surface[y + 1][x + 1] if y + 1 < m and x + 1 < n else None,
+             2: surface[y][x + 1] if x + 1 < n else None,
+             3: surface[y + 1][x - 1] if y > 0 and x > 0 else None,
+             4: surface[y - 1][x] if y > 0 else None
             }
     return neigh
 
