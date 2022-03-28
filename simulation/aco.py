@@ -46,7 +46,7 @@ def neighbor(surface, x, y):
              2: surface[y][x + 1] if x + 1 < n else None,
              3: surface[y + 1][x - 1] if y > 0 and x > 0 else None,
              4: surface[y - 1][x] if y > 0 else None
-            }
+    }
     return neigh
 
 plot = plotter.Plotter()
