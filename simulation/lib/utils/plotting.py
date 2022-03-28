@@ -124,8 +124,15 @@ class Plotter(metaclass=Singleton):
     def plot_pause(self, time):
         plt.pause(time)
 
-    def plot_ant(self, X, Y):
-        self.ax.plot(X, Y)
+    def plot_ant(self, X, Y, clean=None):
+        if clean:
+            self.line = self.ax.plot(X, Y, 'r-')
+        else:
+            self.line = self.ax.plot(X, Y)
 
     def plot_ant_surface(self, X, Y):
-        self.ax.plot(X, Y)
+        plt.xlim(X)
+        plt.ylim(Y)
+
+    def plot_ant_clear(self):
+        plt.cla()

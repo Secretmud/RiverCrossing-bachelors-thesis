@@ -10,6 +10,7 @@ class Point:
         self.p = pheremone
         self.v = v
         self.cost = self.v + self.p
+        self.visited = False
         
 
     def __str__(self):
