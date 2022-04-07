@@ -131,6 +131,10 @@ class Plotter(metaclass=Singleton):
             self.line = self.ax.plot(X, Y)
 
     def plot_ant_surface(self, X, Y):
+        self.ax.spines['right'].set_visible(False)
+        self.ax.spines['top'].set_visible(False)
+        self.ax.spines['left'].set_visible(False)
+        self.ax.spines['bottom'].set_visible(False)
         plt.xlim(X)
         plt.ylim(Y)
 
