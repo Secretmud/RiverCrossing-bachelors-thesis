@@ -9,6 +9,7 @@ class Point:
         self.dy = dy
         self.p = pheremone
         self.visited = False
+        self.neigh = {}
         
 
     def __str__(self):

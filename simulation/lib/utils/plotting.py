@@ -140,3 +140,10 @@ class Plotter(metaclass=Singleton):
 
     def plot_ant_clear(self):
         plt.cla()
+
+    def plot_scatter_std(self, x, y):
+        self.ax.scatter(x, y)
+        self.ax.set_xlabel("iteration")
+        self.ax.set_ylabel("STD")
+        self.ax.set_yscale('log')
+        self.ax.set_xscale('log')

@@ -8,11 +8,17 @@ import numba
 import cProfile
 g = lambda x, theta: np.tan(theta) - S(x)/(v*np.cos(theta))
 
-n = 1280 
-m = 720
+iterations = 9000
+plotting = True
+amount_of_ants = 150
+rho = 0.5
+alpha = 0
+elite = 5
+n = 1000
+m = 1*n
 D = 20
 W = 20
-smax = 1
+smax = 0.9
 S = lambda x: smax*np.exp(-np.power(x-D/2, 4)/5000)
 v = 1
 
@@ -28,30 +34,36 @@ theta = [
 ]
 j = 1
 
+a_start_x = 0
+a_start_y = 0
 for y in range(m):
     i = 1
     for x in range(n):
-        surface[y][x] = p.Point(x, y, i*dx, j*dy, pheremone=1)
+        c_dy = (-W/2)+j*dy
+        surface[y][x] = p.Point(x, y, i*dx, c_dy, pheremone=1)
+        if c_dy == 0:
+            a_start_y = y
+
         i += 1
     j += 1
-# Pre recreation
 """
+# Pre recreation
 time = [
-    lambda x: dy/(v-S(x)),
-    lambda x: (1+(dy/dx)**2)*dx/(np.sqrt((1+(dy/dx)**2)*v**2-S(x+dx/2)**2)-dy/dx*S(x+dx/2)), # np.sqrt()
-    lambda x: dx/np.sqrt(v**2-S(x+dx/2)**2), 
-    lambda x: (1-(dy/dx)**2)*dx/(np.sqrt((1+(dy/dx)**2)*v**2-S(x+dx/2)**2)+(dy/dx)*S(x+dx/2)),
-    lambda x: dy/(v+S(x))
+    lambda x, y: dy/(v-S(x)),
+    lambda x, y: (1+(y/x)**2)*dx/(np.sqrt((1+(y/x)**2)*v**2-S(x+dx/2)**2)-y/x*S(x+dx/2)), # np.sqrt()
+    lambda x, y: dx/np.sqrt(v**2-S(x+dx/2)**2), 
+    lambda x, y: (1-(y/x)**2)*dx/(np.sqrt((1+(y/x)**2)*v**2-S(x+dx/2)**2)+(y/x)*S(x+dx/2)),
+    lambda x, y: dy/(v+S(x))
 ]
 """
 
 # New SE and NE functions
 time = [
-    lambda x, y: dy/(v-S(x)),
-    lambda x, y: dx/v*(np.sqrt(1-(S(x+dx/2)/v)**2+(y/x)**2) - dy/dx*(S(x+dx/2)/v))/(1-(S(x+dx/2)/v)**2),
+    lambda x, y: dy/(v+S(x)),
+    lambda x, y: dx/v*(np.sqrt(1-(S(x+dx/2)/v)**2+(dy/dx)**2) + dy/dx*(S(x+dx/2)/v))/(1-(S(x+dx/2)/v)**2),
     lambda x, y: dx/np.sqrt(v**2-S(x+dx/2)**2), 
-    lambda x, y: dx/v*(np.sqrt(1-(S(x+dx/2)/v)**2+(y/x)**2) + dy/dx*(S(x+dx/2)/v))/(1-(S(x+dx/2)/v)**2),
-    lambda x, y: dy/(v+S(x))
+    lambda x, y: dx/v*(np.sqrt(1-(S(x+dx/2)/v)**2+(dy/dx)**2) - dy/dx*(S(x+dx/2)/v))/(1-(S(x+dx/2)/v)**2),
+    lambda x, y: dy/(v-S(x))
 ]
 
 def neighbor(surface, x, y):
@@ -69,14 +81,15 @@ def neighbor(surface, x, y):
                 #4: surface[y - 1][x] if y > 0 else None                            # South
         }
 
-    return neigh
+    return {k: v for k, v in neigh.items() if v is not None}
+
+for y in range(m):
+    for x in range(n):
+        surface[y][x].neigh = neighbor(surface, x, y)
 
 plot = plotter.Plotter()
 plot.set_projection("2d")
 
-a_start_x = 0
-a_start_y = int(np.floor(m/2)) 
-amount_of_ants = 60
 
 ants = [ant.Ant(surface[a_start_y][a_start_x]) for i in range(amount_of_ants)]
 f = 0
@@ -85,19 +98,18 @@ def generate_solution(ant):
     ant.time = 0
     curr = ant.get_current()
     while curr.x + 1 != n:
-        neigh = neighbor(surface, curr.x, curr.y)
+        neigh = curr.neigh
         pheremone = 0
         if (len(neigh) > 0):
-            for k, val in neigh.items():
-                if val is not None:
-                    if neigh[k] not in ant.get():
-                        pheremone += val.p
             nxt = random.random()
             potential_nodes = {}
             for k, val in neigh.items():
-                if val is not None:
-                    if neigh[k] not in ant.get():
-                        potential_nodes[k] = val.p/pheremone
+                if neigh[k] not in ant.get():
+                    potential_nodes[k] = val.p#+(time[k](neigh[k].dx, neigh[k].dy))
+                    pheremone += val.p
+            
+            for i in potential_nodes.keys():
+                potential_nodes[i] /= pheremone
             
 
             potential_nodes = {k: val for k, val in sorted(potential_nodes.items(), key=lambda item: item[1])}
@@ -141,62 +153,67 @@ def generate_solution(ant):
         if curr.y < a_start_y:
             ant.add_path(surface[curr.y+1][curr.x])
             curr = ant.get_current()
-            ant.time += time[0](curr.dx, curr.dy)
+            ant.time += 2*time[0](curr.dx, curr.dy)
         else:
             ant.add_path(surface[curr.y-1][curr.x])
             curr = ant.get_current()
-            ant.time += time[-1](curr.dx, curr.dy)
+            ant.time += 2*time[-1](curr.dx, curr.dy)
     
     ant.edged = edged
 
 
-rho = 0.5
-alpha = 0.1
 
 """
 Update the pheremones for each point that has been hit by an ant. 
 """
 
 
-def update_pheremones():
+def update_pheremones(best_ants=ants):
+    print(len(best_ants))
     pheremone = []
-    for y in range(m):
-        tmp = []
-        for x in range(n):
-            tmp.append(surface[y][x].p)
+    global alpha
+    for i in range(m):
+        tmp = [0]*n
         pheremone.append(tmp)
 
-    for ant in ants:
+    for ant in best_ants:
         for p in ant.get():
             pheremone[p.y][p.x] += 1/ant.time
     
     for y in range(m):
         for x in range(n):
-            diff = neighbor(surface, surface[y][x].x, surface[y][x].y)
+            diff = surface[y][x].neigh
             tot_diff = 0
+            neighs = 1
             for k, val in diff.items():
-                if val is not None:
-                    tot_diff += val.p
-            surface[y][x].p = (rho)*(pheremone[y][x] + alpha*tot_diff)
-iterations = 400
-plotting = False
+                tot_diff += val.p
+                neighs+=1
+            surface[y][x].p = (1-rho)*surface[y][x].p+(pheremone[y][x] + alpha*tot_diff/neighs)
+    if alpha > 10e-6: 
+        alpha /= 2
+    else:
+        alpha = 0
 if plotting:
-    plot.plot_ant_surface([0, D], [8, 12])
-    plot.plot_ant([0, D], [a_start_y, a_start_y], clean=True)
+    plot.plot_ant_surface([0, D], [surface[a_start_y][a_start_x].dy-2, surface[a_start_y][a_start_x].dy+2])
 from alive_progress import alive_bar
-
+import operator
+i = 0
+import statistics
+sd = []
+mean = []
 with alive_bar(iterations) as bar:
-    for i in range(iterations):
+    old_sum = 0
+    while i < iterations:
         if i > 0 and plotting:
             plot.plot_ant_clear()
-            plot.plot_ant_surface([0, D], [8, 12])
+            plot.plot_ant_surface([0, D], [surface[a_start_y][a_start_x].dy-2, surface[a_start_y][a_start_x].dy+2])
 
         p = [threading.Thread(target=generate_solution, args=(ant,)) for ant in ants]
         for t in p:
             t.start()
         for t in p:
             t.join()
-        if plotting:
+        if plotting and i%45 == 0 and i > 0:
             for ant in ants:
                 posx = []
                 posy = []
@@ -205,9 +222,31 @@ with alive_bar(iterations) as bar:
                     posy.append(a.dy)
                 plot.plot_ant(posx, posy)
                 plot.plot_pause(1/amount_of_ants)
+        times = {}
+        for ant in ants:
+            times[ant] = ant.time
+        times = sorted(times.items(), key=operator.itemgetter(1))[:elite]
+        best_ants = []
+        times_ant = []
+        f = 1
+        for ant in ants:
+            times_ant.append(ant.time)
+        for k in times:
+            k[0].time = f
+            best_ants.append(k[0])
+            f += 1
+        print(f"{abs(old_sum - sum(times_ant))}")
+        sd.append(statistics.stdev(times_ant))
+        mean.append(statistics.mean(times_ant))
+        if abs(old_sum - sum(times_ant)) < 10e-6:
+            for val1, val2 in zip(ants, times_ant):
+                val1.time = val2
 
-        update_pheremones()
+            break
+        old_sum = sum(times_ant)
+        update_pheremones(best_ants=best_ants)
         bar()
+        i += 1
 """
 with alive_bar(iterations) as bar:
     for i in range(iterations):
@@ -235,8 +274,16 @@ for a in ants:
     for i in a:
         X.append(i.dx)
         Y.append(i.dy)
-    plot.plot_ant_surface([0, D], [8, 12])
+    plot.plot_ant_surface([0, D], [surface[a_start_y][a_start_x].dy-2, surface[a_start_y][a_start_x].dy+2])
     plot.plot_ant(X, Y)
+
+with open(f"sd/{rho}_{alpha}_{m}_{n}_size({len(sd)}).txt", "w+") as f:
+    for s in sd:
+        f.write(f"{s},")
+    f.write("\n")
+    for m in mean:
+        f.write(f"{m},")
 
 plot.plot_show()
 print(sorted(times))
+print(sd)
