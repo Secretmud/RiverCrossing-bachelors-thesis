@@ -10,7 +10,6 @@ class Point:
         self.p = pheremone
         self.visited = False
         self.neigh = {}
-        
 
     def __str__(self):
-        return f"[{self.x=} {self.y=} {self.dx=} {self.dy=} {self.v=:.4f} {self.p=}]"
+        return f"true" 

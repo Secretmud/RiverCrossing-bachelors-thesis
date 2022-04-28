@@ -8,6 +8,7 @@ class Ant:
         self.time = 0
         self.edged = False
         self.last_dy = 0
+        self.node = 0
 
     def add_path(self, p):
         self.path.append(p)
