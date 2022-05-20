@@ -26,14 +26,18 @@ class Plotter(metaclass=Singleton):
     """
 
     def __init__(self):
-        self.fig = plt.figure()
-        self.N = 30
+        self.dpi = 100
+        self.fig = plt.figure(figsize=(1280/self.dpi, 720/self.dpi), dpi=self.dpi)
+        self.N = 10
+        self.alphas = np.linspace(0.1, 1, self.N)
         self.pathx = [0]*self.N
         self.pathy = [0]*self.N
         self.pathz = [0]*self.N
         self.i = 0
         self.scatter = 0
-        self.line = 0
+        self.v = 0
+        self.projection = "2d"
+        plt.rcParams.update({'font.size': 16})
 
     def get_projection(self):
         if self.projection == None:
@@ -42,10 +46,10 @@ class Plotter(metaclass=Singleton):
             return projection
     
     def set_projection(self, projection):
+        self.projection = projection
         if projection == "3d":
-            #self.ax = Axes3D(fig)
             self.ax = self.fig.add_subplot(111, projection=projection)
-            self.ax.view_init(elev=55, azim=-135)
+            self.ax.view_init(elev=54, azim=135)
         else:
             self.ax = self.fig.add_subplot(111)
 
@@ -89,14 +93,19 @@ class Plotter(metaclass=Singleton):
 
     def plot_contour(self, X, Y, z):
         Z = np.array(z)
-        norm = plt.Normalize(Z.min(), Z.max())
-        CS = self.ax.contour(X, Y, Z, levels=35)
-        self.ax.set_xlabel(r"$C_1$", fontsize=12)
-        self.ax.set_ylabel(r"$C_2$", fontsize=12)
+        #norm = plt.Normalize(Z.min(), Z.max())
+        CS = self.ax.contour(X, 
+                             Y, 
+                             Z,
+                             levels=25
+                             )
+        #self.ax.set_xlabel(r"$C_1$", fontsize=12)
+        #self.ax.set_ylabel(r"$C_2$", fontsize=12)
         self.ax.clabel(CS, inline=True, fmt='%1.1f s', fontsize=10)
 
-    def plot_scatter(self, points, last=None):
+    def plot_scatter_3d(self, points, last=None):
         if self.i + 1 == self.N:
+            self.ax.plot([self.pathx[0], self.pathx[-1]], [self.pathy[0], self.pathy[-1]])
             self.pathx[0] = self.pathx[-1]
             self.pathy[0] = self.pathy[-1]
             self.pathz[0] = self.pathz[-1]
@@ -106,17 +115,40 @@ class Plotter(metaclass=Singleton):
                 self.pathx[i] = points[0]
                 self.pathy[i] = points[1]
                 self.pathz[i] = points[2]
-            self.scatter = self.ax.scatter(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i], alpha=1, color="red")
-            self.line = self.ax.plot(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i])
+            self.scatter = self.ax.scatter(self.pathx, self.pathy, self.pathz, alpha=self.alphas, color="black")
         else:
             self.pathx[self.i] = points[0]
             self.pathy[self.i] = points[1]
             self.pathz[self.i] = points[2]
         if self.i % 1 == 0:
             self.scatter.remove()
-            self.line = self.ax.plot(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i])
-            self.scatter = self.ax.scatter(self.pathx[self.i], self.pathy[self.i], self.pathz[self.i], alpha=1, color="red")
+            self.scatter = self.ax.scatter(self.pathx, self.pathy, self.pathz, alpha=self.alphas, color="black")
         self.i += 1
+        self.fig.savefig(f"animation/{self.v}.png", dpi=self.dpi)
+        self.v += 1
+
+
+    def plot_scatter_2d(self, points, last=None):
+        #self.alphas[self.i] = self.alphas[-1]
+        if self.i + 1 == self.N:
+            self.pathx[0] = self.pathx[-1]
+            self.pathy[0] = self.pathy[-1]
+            #self.ax.plot(self.pathx, self.pathy)
+            self.i = 1
+        if self.i == 0:
+            for i in range(len(self.pathx)):
+                self.pathx[i] = points[0]
+                self.pathy[i] = points[1]
+            self.scatter = self.ax.scatter(self.pathx, self.pathy, alpha=self.alphas, color="black")
+        else:
+            self.pathx[self.i] = points[0]
+            self.pathy[self.i] = points[1]
+        if self.i % 1 == 0:
+            self.scatter.remove()
+            self.scatter = self.ax.scatter(self.pathx, self.pathy, alpha=self.alphas, color="black")
+        self.i += 1
+        self.fig.savefig(f"animation/{self.v}.png", dpi=self.dpi)
+        self.v += 1
 
     def plot_show(self):
         plt.show()
@@ -130,17 +162,27 @@ class Plotter(metaclass=Singleton):
         else:
             self.line = self.ax.plot(X, Y)
 
-    def plot_ant_surface(self, X, Y):
-        self.ax.spines['right'].set_visible(False)
-        self.ax.spines['top'].set_visible(False)
-        self.ax.spines['left'].set_visible(False)
-        self.ax.spines['bottom'].set_visible(False)
+    def plot_ant_surface(self, X, Y, i=None):
+        #self.ax.spines['right'].set_visible(False)
+        #self.ax.spines['top'].set_visible(False)
+        #self.ax.spines['left'].set_visible(False)
+        #self.ax.spines['bottom'].set_visible(False)
         plt.xlim(X)
         plt.ylim(Y)
+        self.ax.set_xlabel(r"$River$", fontsize=12)
+        self.ax.set_ylabel(r"$Shore$", fontsize=12)
+        if i is not None:
+            self.fig.savefig(f"animation/{i}.png", bbox_inches='tight')
 
     def plot_ant_clear(self):
         plt.cla()
 
-    def plot_scatter_std(self, x, y, z):
+    def plot_scatter_std(self, x, y, z, i):
+        #x, y = np.meshgrid(x, y)
+        self.ax.contourf(x, y, z, 20)
+        #self.ax.scatter(x, y, s=z)
+        self.fig.savefig(f"animation/{i}.png", bbox_inches='tight')
+
+    def plot_quiver(self, x, y, u):
         x, y = np.meshgrid(x, y)
-        self.ax.pcolor(x, y, z)
+        self.ax.quiver(x, y, u, units='xy')

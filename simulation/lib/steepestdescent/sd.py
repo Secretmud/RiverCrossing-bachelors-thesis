@@ -7,7 +7,7 @@ p = Plotter()
 class SteepestDescent():
 
     def __init__(self, x, d, S, T, C, size=10):
-        self.x = copy.deepcopy(x)
+        self.x = np.copy(x)
         self.d = d
         self.S = S
         self.T = T
@@ -40,26 +40,23 @@ class SteepestDescent():
         #return trapezoidal(T1, 0, x[-1], len(x), cosine_expansion(x, x[-1], c))
         return trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c))
 
-    def steepest_descent(self, c, plot=False, learning_rate = 1, stopping_threshold = 1e-5):
+    def steepest_descent(self, c, plot=False, learning_rate = 1, stopping_threshold = 1e-6):
         nc = len(c)
-        h = 0.05
+        h = 0.1
         iterations = 0
         fd = 1
-        cold = np.copy(c)
-        if plot:
-            self.scatter = np.copy(c)
-            self.scatter = np.append(self.scatter, trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c)))
-            p.plot_scatter(self.scatter)
-        #while np.absolute(np.sum(cold) - np.sum(c))>= stopping_threshold:
-        while fd >= stopping_threshold:
+        cold = [0.01]*len(c)
+        #while >= stopping_threshold:
+        while np.absolute(np.sum(cold) - np.sum(c)) >= stopping_threshold:
             cold = np.copy(c)
             iterations += nc
             if plot:
                 if iterations % 1 == 0:
                     self.scatter = np.copy(c)
                     self.scatter = np.append(self.scatter, trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c)))
-                    p.plot_scatter(self.scatter)
-                    p.plot_pause(0.1)
+                    #p.plot_scatter_3d(self.scatter)
+                    p.plot_scatter_3d(self.scatter)
+                    p.plot_pause(0.05)
             for i in range(nc):
                 minc = np.copy(c)
                 posc = np.copy(c)
