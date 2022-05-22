@@ -56,7 +56,6 @@ class SteepestDescent():
                     self.scatter = np.append(self.scatter, trapezoidal(self.T, 0, self.d, len(self.x), self.cosine_expansion(c)))
                     #p.plot_scatter_3d(self.scatter)
                     p.plot_scatter_3d(self.scatter)
-                    p.plot_pause(0.05)
             for i in range(nc):
                 minc = np.copy(c)
                 posc = np.copy(c)
@@ -68,6 +67,3 @@ class SteepestDescent():
         print(f"\nDone with {iterations=}")
         return c
 
-if __name__ == "__main__":
-    x = np.linspace(0, 1, 2)
-    print(sine_expansion(x, [0, 1]))

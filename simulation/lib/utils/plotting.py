@@ -49,7 +49,7 @@ class Plotter(metaclass=Singleton):
         self.projection = projection
         if projection == "3d":
             self.ax = self.fig.add_subplot(111, projection=projection)
-            self.ax.view_init(elev=54, azim=135)
+            self.ax.view_init(elev=25, azim=135)
         else:
             self.ax = self.fig.add_subplot(111)
 
@@ -80,16 +80,22 @@ class Plotter(metaclass=Singleton):
             self.fig.artists.append(ann)
         #ax.set_yscale('log')
 
-    def plot_surface(self, X, Y, z):
+    def plot_surface(self, X, Y, z, i=None):
         Z = np.array(z)
         X, Y = np.meshgrid(X, Y)
         norm = plt.Normalize(Z.min(), Z.max())
         colors = cm.viridis(norm(Z))
         rcount, ccount, _ = colors.shape
         self.ax.plot_surface(X, Y, Z, cmap='viridis', rcount=rcount, ccount=ccount, facecolors=colors, shade=False, alpha=0.5)
-        self.ax.set_xlabel(r"$C_1$", fontsize=12)
-        self.ax.set_ylabel(r"$C_2$", fontsize=12)
-        self.ax.set_zlabel(r"$T[C_n]$", fontsize=12)
+        self.ax.set_zlim([0,800])
+        self.ax.set_xlabel(r"$C_1$")
+        self.ax.set_ylabel(r"$C_2$")
+        self.ax.set_zlabel(r"$T[C_n]$")
+        if i is not None:
+            self.fig.savefig(f"animation/{i}.png")
+
+    def plot_clear(self):
+        self.ax.cla()
 
     def plot_contour(self, X, Y, z):
         Z = np.array(z)

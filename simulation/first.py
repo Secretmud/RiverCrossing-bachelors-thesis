@@ -8,7 +8,7 @@ from matplotlib import cm, rc
 import matplotlib.pyplot as plt
 
 D = 20
-N = 1000
+N = 5000
 v = 1
 h = (D/N)
 smax = 0.9
@@ -28,21 +28,36 @@ x = np.linspace(0, D, N)
 y_vec = [0]*N
 time = 0
 i = 0
-theta = np.linspace(-np.pi/2, np.pi/2, N)
+theta = np.linspace(np.pi/2, -np.pi/2, N)
 for gs in functions:
     mid = {}
     times = 0
     print(f"Function nr: {i+1}/{len(functions)}")
     ic = 0
-    th = np.arcsin(vec_midpoint(S, 0, D, N)/(v*D))
+    th = np.arcsin(trapezoidal(S, 0, D, N)/(v*D))
     g_val = gs(x, th)
-    low = vec_midpoint(T1, 0, D, N, g_val)
+    low = trapezoidal(T1, 0, D, N, g_val)
+    """
+    for thetas in theta:
+        cg_val = gs(x, thetas)
+        clow = trapezoidal(T1, 0, D, N, cg_val)
+        print(f"{clow} {thetas}")
+        if clow < low and 26 < clow < 27:
+            low = clow
+            th = thetas
+    """
+
     print(f"Tid: {low:.3f} Vinkel i grader: {th*180/np.pi:.3f}")
     for x_i in x:
-        y_vec[ic] = x_i*np.tan(th) - 1/(v*np.cos(th))*vec_midpoint(S, 0, x_i, N)
+        y_vec[ic] = x_i*np.tan(th) - 1/(v*np.cos(th))*trapezoidal(S, 0, x_i, N)
         ic += 1
 
-    plt.plot(x, y_vec)
+    plt.plot(x, y_vec, label="Path")
     i += 1
-plt.plot([0, D], [0, 0])
+plt.plot([0, D], [0, 0], label="Straigh across")
+plt.plot(x, S(x), label="Current")
+plt.legend(loc="upper right")
+plt.xlim([0, D])
+plt.xlabel("River")
+plt.ylabel("Shore")
 plt.show()
