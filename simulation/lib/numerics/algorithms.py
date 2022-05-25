@@ -16,9 +16,9 @@ def trapezoidal(f, a, b, n, g=None, c=None):
     x = np.linspace(a, b, n)
     s = 0
     if callable(g):
-        s += np.trapz(f(x, g(x, c)), x=x)
+        s += np.trapz(f(x, g(x, c)), x=x, dx=h)
     elif g is None:
-        s += np.trapz(f(x), x=x)
+        s += np.trapz(f(x), x=x, dx=h)
     else:
-        s += np.trapz(f(x, g), x=x)
+        s += np.trapz(f(x, g), x=x, dx=h)
     return s

@@ -26,7 +26,7 @@ i = 0
 for test in tests:
     smax = 0.9
     Nt = test
-    N = 100*Nt
+    N = 400*Nt
     x = np.linspace(0, D, N)
     c_start = [0]*Nt
     sd = SteepestDescent(x, D, S, T1, c_start)
@@ -66,9 +66,6 @@ for test in tests:
         plt.plot(x, tot, label=f"{test} sine expansions")
         print(time_taken)
 
-functions = [
-    lambda x, theta: np.tan(theta) - S(x)/(v*np.cos(theta))
-]
 
 plt.plot([0, D], [0, 0], label="Straight across")
 plt.xlim([0, D])
@@ -77,23 +74,16 @@ plt.ylabel("Shore")
 
 if not plot:
     plt.plot(x, S(x), label="Current")
-    y_vec = [0]*N
-    i = 0
-    theta = np.linspace(-np.pi/2, np.pi/2, N)
-    for gs in functions:
-        print(f"Function nr: {i+1}/{len(functions)}")
-        ic = 0
-        th = np.arcsin(trapezoidal(S, 0, D, N)/(v*D))
-        g_val = gs(x, th)
-        low = trapezoidal(T1, 0, D, N, g_val)
-        print(f"Tid: {low:.3f} Vinkel i grader: {th*180/np.pi:.3f}")
-        for x_i in x:
-            y_vec[ic] = x_i*np.tan(th) - 1/(v*np.cos(th))*trapezoidal(S, 0, x_i, N)
-            ic += 1
+    leiv_y = []
+    with open("opt.dat", "r") as f:
+        for line in f.readlines():
+            leiv_y.append(float(line))
 
-        plt.plot(x, y_vec, label="Semi analytic", linestyle="dashed")
-        i += 1
+    print(len(leiv_y))
+    x = np.linspace(0, D, len(leiv_y))
+
+    plt.plot(x, leiv_y, label="Semi analytic", linestyle="dashed")
 
     plt.legend(loc="upper right")
 
-p.plot_show()
+plt.savefig("check_all.png")
